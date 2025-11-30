@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 from typing import Dict
 
+
 def config(filename: str = "database.ini", section: str = "postgresql") -> Dict[str, str]:
     # create a parser
     parser = ConfigParser()
@@ -12,6 +13,5 @@ def config(filename: str = "database.ini", section: str = "postgresql") -> Dict[
         for param in params:
             db[param[0]] = param[1]
     else:
-        raise Exception(
-            'Section {0} is not found in the {1} file.'.format(section, filename))
+        raise Exception("Section {0} is not found in the {1} file.".format(section, filename))
     return db
