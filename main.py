@@ -1,8 +1,12 @@
+import os
 from pprint import pprint
 
+from src.config import config
 from src.hh_api import HeadHunterAPI
+from src.utils import create_database
 
-if __name__ == "__main__":
+
+def main():
     employers_ids = [
         "2180",  # Ozon
         "2662767",  # ООО Газпром 335
@@ -18,5 +22,11 @@ if __name__ == "__main__":
 
     api = HeadHunterAPI()
     vacancies_all = api.get_vacancies(employers_ids)
+    pprint(vacancies_all)
 
-    pprint(api.get_vacancies(employers_ids))
+    params = config()
+
+    create_database("hh_vacancies", params)
+
+if __name__ == "__main__":
+    main()
