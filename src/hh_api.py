@@ -1,50 +1,25 @@
-import json
-from typing import Any, List, Dict
+from typing import Dict, List
 
 import requests
 
-from src.abstract_hh_api import AbstractHHApi
+from .abstract_hh_api import AbstractHHApi
 
 
 class HeadHunterAPI(AbstractHHApi):
-    """Класс для работы с API HeadHunter"""
+    BASE_URL = "https://api.hh.ru"
 
-    def __init__(self) -> None:
-        self.__base_url = "https://api.hh.ru/vacancies"
-        self.__headers = {"User-Agent": "HH-User-Agent"}
-        self.vacancies: List[Dict[str, Any]] = []
+    def __init__(self):
+        self.headers = {"User-Agent": "HH-Vacancies-DB/1.0"}
 
-    def __connection_setup(self) -> None:
-        """Отправляет запрос на базовый URL. Приватный метод, доступен только внутри класса"""
+    def get_employer(self, employer_id: str) -> Dict:
+        url = f"{self.BASE_URL}/employers/{employer_id}"
+        response = requests.get(url, headers=self.headers)
+        response.raise_for_status()
+        return response.json()
 
-        response = requests.get(self.__base_url, headers=self.__headers)
-        status_code = response.status_code
-        if status_code == 200:
-            print("Соединение с API установлено")
-        else:
-            print(f"Запрос не был успешным. Возможная причина {response.reason}")
-
-    def public_connection_setup(self) -> None:
-        """Это публичный метод, который вызывает приватный метод"""
-
-        self.__connection_setup()
-
-    def get_vacancies(self, employers_ids: List[str]) -> List[Dict[str, Any]]:
-        """Получает список вакансий с сервера"""
-
-        self.public_connection_setup()
-        params = {"employer_id": employers_ids, "area": 113, "page": 0, "per_page": 100, "only_with_salary": True}
-        while params["page"] != 20:
-            try:
-                response = requests.get(self.__base_url, headers=self.__headers, params=params)
-                response.raise_for_status()
-                vacancies = response.json()["items"]
-                self.vacancies.extend(vacancies)
-                params["page"] += 1
-                return self.vacancies
-            except requests.exceptions.RequestException as e:
-                print(f"Ошибка при выполнении запроса: {e}")
-                return []
-            except json.JSONDecodeError:
-                print("Ошибка при парсинге JSON-ответа.")
-                return []
+    def get_vacancies(self, employer_id: str) -> List[Dict]:
+        url = f"{self.BASE_URL}/vacancies"
+        params = {"employer_id": employer_id, "per_page": 100, "area": 113, "only_with_salary": False}
+        response = requests.get(url, headers=self.headers, params=params)
+        response.raise_for_status()
+        return response.json().get("items", [])

@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Any, List, Dict
+from typing import Dict, List
 
 
 class AbstractHHApi(ABC):
-    """Абстрактный класс для работы с API hh.ru"""
+    @abstractmethod
+    def get_employer(self, employer_id: str) -> Dict:
+        pass
 
     @abstractmethod
-    def get_vacancies(self, employers_ids: List[str]) -> List[Dict[str, Any]]:
+    def get_vacancies(self, employer_id: str) -> List:
         pass
