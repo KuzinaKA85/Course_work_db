@@ -2,13 +2,13 @@ from typing import List
 
 import psycopg2
 
-from hh_api import HeadHunterAPI
-from config import get_db_params
+from src.hh_api import HeadHunter
+from src.config import get_db_params
 
 
 class DataLoader:
     def __init__(self):
-        self.api = HeadHunterAPI()
+        self.api = HeadHunter()
 
     def load_employers(self, employer_ids: List[str]):
         """Загружает работодателей"""
