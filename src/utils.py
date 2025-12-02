@@ -1,56 +1,62 @@
-from typing import List, Dict, Any
-
 import psycopg2
+from psycopg2 import sql
+
+from .config import get_db_params
 
 
-def create_database(database_name: str, params: dict) -> None:
-    """Создание базы данных и таблиц для сохранения данных о работодателях и вакансиях"""
+def create_database():
+    """Создаёт базу данных, если не существует."""
 
-    conn = psycopg2.connect(dbname = 'postgres', **params)
+    conn = psycopg2.connect(
+        dbname="postgres",
+        user=get_db_params()["user"],
+        password=get_db_params()["password"],
+        host=get_db_params()["host"],
+    )
     conn.autocommit = True
     cur = conn.cursor()
-
-    cur.execute(f"DROP DATABASE {database_name}")
-    cur.execute(f"CREATE DATABASE {database_name}")
-    print(f"База данных {database_name} создана")
-
+    cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(get_db_params()["dbname"])))
     cur.close()
     conn.close()
+    print(f"База данных {get_db_params()['dbname']} создана.")
 
-    conn = psycopg2.connect(dbname = database_name, **params)
 
-    with conn.cursor() as cur:
-        # Создаем таблицу Employers
-        cur.execute("""
-            CREATE TABLE Employers (
-                id serial PRIMARY KEY,
-                employer_id varchar(50) UNIQUE NOT NULL,
-                name varchar(200) NOT NULL,
-                url varchar(250) NOT NULL
-            )
-        """)
+def create_tables():
+    """Создаёт таблицы employers и vacancies."""
 
-    with conn.cursor() as cur:
-        # Создаем таблицу Vacancies
-        cur.execute("""
-            CREATE TABLE Vacancies (
-                id serial PRIMARY KEY,
-                vacancies_id varchar(50) UNIQUE NOT NULL,
-                employer_id varchar(50) REFERENCES Employers(employer_id),
-                name varchar(400) NOT NULL,
-                url varchar(250) NOT NULL,
-                salary_from int,
-                salary_to int               
-            )
-        """)
+    conn = psycopg2.connect(**get_db_params())
+    cur = conn.cursor()
+
+    # Таблица работодателей
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS employers (
+            employer_id SERIAL PRIMARY KEY,
+            hh_id VARCHAR(50) UNIQUE NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            url TEXT,
+            open_vacancies INTEGER DEFAULT 0
+        );
+    """
+    )
+
+    # Таблица вакансий
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS vacancies (
+            vacancy_id SERIAL PRIMARY KEY,
+            hh_id VARCHAR(50) UNIQUE NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            url TEXT NOT NULL,
+            salary_from INTEGER,
+            salary_to INTEGER,
+            employer_id INTEGER REFERENCES employers(employer_id) ON DELETE CASCADE,
+            description TEXT
+        );
+    """
+    )
+
     conn.commit()
+    cur.close()
     conn.close()
-
-
-def save_data_to_database(data: List[Dict[str, Any]], database_name: str, params: Dict) -> None:
-    """Сохранение данных о работодателях и вакансиях"""
-
-    conn = psycopg2.connect(dbname=database_name, **params)
-
-    with conn.cursor() as cur:
-
+    print("Таблицы созданы.")
