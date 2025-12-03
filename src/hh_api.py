@@ -6,18 +6,24 @@ from .abstract_hh_api import AbstractHHApi
 
 
 class HeadHunter(AbstractHHApi):
+    """Класс для работы с API HeadHunter"""
+
     base_url = "https://api.hh.ru"
 
     def __init__(self):
         self.headers = {"User-Agent": "HH-Vacancies-DB/1.0"}
 
     def get_employer(self, employer_id: str) -> Dict:
+        """Получает работодателей"""
+
         url = f"{self.base_url}/employers/{employer_id}"
         response = requests.get(url, headers=self.headers)
         response.raise_for_status()
         return response.json()
 
     def get_vacancies(self, employer_id: str) -> List[Dict]:
+        """Получает вакансии"""
+
         url = f"{self.base_url}/vacancies"
         parameters = {"employer_id": employer_id, "per_page": 100, "area": 113, "only_with_salary": False}
         response = requests.get(url, headers=self.headers, params=parameters)
