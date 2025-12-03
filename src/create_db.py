@@ -10,6 +10,7 @@ class DatabaseManager:
     @staticmethod
     def create_database():
         """Создаёт базу данных, если не существует."""
+
         conn = psycopg2.connect(
             dbname="postgres",
             user=get_db_params()["user"],

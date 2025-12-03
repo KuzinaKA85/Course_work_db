@@ -2,8 +2,8 @@ from typing import List
 
 import psycopg2
 
-from src.hh_api import HeadHunter
 from src.config import get_db_params
+from src.hh_api import HeadHunter
 
 
 class DataLoader:
