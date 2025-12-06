@@ -19,6 +19,8 @@ class DatabaseManager:
         )
         conn.autocommit = True
         cur = conn.cursor()
+        db_name = get_db_params()["dbname"]
+        cur.execute(sql.SQL("DROP DATABASE IF EXISTS {}").format(sql.Identifier(db_name)))
         cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(get_db_params()["dbname"])))
         cur.close()
         conn.close()
